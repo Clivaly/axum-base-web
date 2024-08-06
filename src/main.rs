@@ -1,21 +1,25 @@
 use std::net::SocketAddr;
 
+pub use self::error::{CustomError, Result};
+
 use axum::{
-    extract::{Path, Query},
-    response::{Html, IntoResponse},
-    routing::get,
-    Router,
+    extract::{Path, Query}, middleware, response::{Html, IntoResponse, Response}, routing::get, Router
 };
 use serde::Deserialize;
 use tower_http::services::ServeDir;
 
 mod error;
+mod web;
 
 #[tokio::main]
 async fn main() {
     let routes_all = Router::new()
         .merge(routes_hello())
+        .merge(web::routes_login::routes())
+        .layer(middleware::map_response(main_response_mapper))
         .fallback_service(routes_static());
+
+    // region:     --- Server ---
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3001));
     println!("->> LISTENING on {addr}\n");
@@ -24,6 +28,13 @@ async fn main() {
         .serve(routes_all.into_make_service())
         .await
         .unwrap();
+}
+
+async fn main_response_mapper(res: Response) -> Response {
+    println!("->> {:<12} - main_response_mapper", "RES_MAPPER");
+
+    println!();
+    res
 }
 
 fn routes_static() -> Router {

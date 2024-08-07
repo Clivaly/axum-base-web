@@ -3,24 +3,35 @@ use std::net::SocketAddr;
 pub use self::error::{CustomError, Result};
 
 use axum::{
-    extract::{Path, Query}, middleware, response::{Html, IntoResponse, Response}, routing::get, Router
+    extract::{Path, Query},
+    middleware,
+    response::{Html, IntoResponse, Response},
+    routing::get,
+    Router,
 };
+use model::ModelController;
 use serde::Deserialize;
+use tower_cookies::CookieManagerLayer;
 use tower_http::services::ServeDir;
 
 mod error;
+mod model;
 mod web;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
+    // Initialize ModelController
+    let mc = ModelController::new().await?;
+
     let routes_all = Router::new()
         .merge(routes_hello())
         .merge(web::routes_login::routes())
+        .nest("/api", web::routes_tickets::routes(mc.clone()))
         .layer(middleware::map_response(main_response_mapper))
+        .layer(CookieManagerLayer::new())
         .fallback_service(routes_static());
 
     // region:     --- Server ---
-
     let addr = SocketAddr::from(([127, 0, 0, 1], 3001));
     println!("->> LISTENING on {addr}\n");
 
@@ -28,6 +39,8 @@ async fn main() {
         .serve(routes_all.into_make_service())
         .await
         .unwrap();
+
+    Ok(())
 }
 
 async fn main_response_mapper(res: Response) -> Response {
@@ -62,5 +75,5 @@ async fn handler_hello(Query(params): Query<HelloParams>) -> impl IntoResponse {
 async fn handler_hello2(Path(name): Path<String>) -> impl IntoResponse {
     println!("->> {:<12} - handler_hello2 - {name:?}", "HANDLER");
 
-    Html(format!("Hello, <strong>{name}</strong>"))
+    Html(format!("Hello2, <strong>{name}</strong>"))
 }

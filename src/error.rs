@@ -10,6 +10,9 @@ pub type Result<T> = core::result::Result<T, CustomError>;
 #[derive(Debug)]
 pub enum CustomError {
     LoginFail,
+
+    // -- Model errors.
+    TicketDeleteFailIdNotFound { id: u64 },
 }
 
 impl IntoResponse for CustomError {

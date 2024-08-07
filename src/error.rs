@@ -7,13 +7,14 @@ use axum::{
 
 pub type Result<T> = core::result::Result<T, CustomError>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum CustomError {
     LoginFail,
 
     // -- Auth errors.
     AuthFailNoAuthTokenCookie,
     AuthFailTokenWrongFormat,
+    AuthFailCtxNotInRequestExt,
 
     // -- Model errors.
     TicketDeleteFailIdNotFound { id: u64 },

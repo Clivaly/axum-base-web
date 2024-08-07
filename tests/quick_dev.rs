@@ -1,4 +1,5 @@
-#[allow(unused)]
+#![allow(unused)]
+
 use anyhow::Result;
 use serde_json::json;
 
@@ -16,7 +17,7 @@ async fn quick_dev() -> Result<()> {
         json!({
             "username": "admin",
             "pwd": "welcome"
-        }),
+        }), 
     );
 
     req_login.await?.print().await?;

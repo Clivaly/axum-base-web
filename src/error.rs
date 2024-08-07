@@ -13,6 +13,7 @@ pub enum CustomError {
 
     // -- Auth errors.
     AuthFailNoAuthTokenCookie,
+    AuthFailTokenWrongFormat,
 
     // -- Model errors.
     TicketDeleteFailIdNotFound { id: u64 },

@@ -10,9 +10,12 @@ axum = {version = "0.6", features = ["macros"]}
 tower-http = {version = "0.4", features = ["fs"] }
 tower-cookies = "0.9"
 
-# Serde
+# Serde / Json
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+
+# Others
+lazy-regex = "2"
 
 [dev-dependencies]
 anyhow = "1"

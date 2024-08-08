@@ -4,19 +4,21 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
+use serde::Serialize;
 
 pub type Result<T> = core::result::Result<T, CustomError>;
 
-#[derive(Debug, Clone, strum_macros::AsRefStr)]
+#[derive(Debug, Clone, Serialize, strum_macros::AsRefStr)]
+#[serde(tag = "type", content = "data")]
 pub enum CustomError {
     LoginFail,
 
-    // -- Auth errors.
+    // -- Auth Errors.
     AuthFailNoAuthTokenCookie,
     AuthFailTokenWrongFormat,
     AuthFailCtxNotInRequestExt,
 
-    // -- Model errors.
+    // -- Model Errors.
     TicketDeleteFailIdNotFound { id: u64 },
 }
 

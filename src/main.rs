@@ -3,8 +3,15 @@ use std::net::SocketAddr;
 pub use self::error::{CustomError, Result};
 
 use axum::{
-    extract::{Path, Query}, middleware, response::{Html, IntoResponse, Response}, routing::get, Json, Router
+    extract::{Path, Query},
+    http::{Method, Uri},
+    middleware,
+    response::{Html, IntoResponse, Response},
+    routing::get,
+    Json, Router,
 };
+use ctx::Ctx;
+use log::log_request;
 use model::ModelController;
 use serde::Deserialize;
 use serde_json::json;
@@ -14,6 +21,7 @@ use uuid::Uuid;
 
 mod ctx;
 mod error;
+mod log;
 mod model;
 mod web;
 
@@ -49,7 +57,12 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn main_response_mapper(res: Response) -> Response {
+async fn main_response_mapper(
+    ctx: Option<Ctx>,
+    uri: Uri,
+    req_method: Method,
+    res: Response,
+) -> Response {
     println!("->> {:<12} - main_response_mapper", "RES_MAPPER");
 
     let uuid = Uuid::new_v4();
@@ -59,8 +72,7 @@ async fn main_response_mapper(res: Response) -> Response {
     let client_status_error = service_error.map(|se| se.client_status_and_error());
 
     // -- If client error, build the new response.
-    let error_response = 
-        client_status_error
+    let error_response = client_status_error
         .as_ref()
         .map(|(status_code, client_error)| {
             let client_error_body = json!({
@@ -76,7 +88,9 @@ async fn main_response_mapper(res: Response) -> Response {
         });
 
     // -- TODO: Build an log the server log line.
-    println!("->> server log line - {uuid:?} - Error: {service_error:?}");
+    // println!("->> server log line - {uuid:?} - Error: {service_error:?}");
+    let client_error = client_status_error.unzip().1;
+    _ = log_request(uuid, req_method, uri, ctx, service_error, client_error).await;
 
     println!();
     error_response.unwrap_or(res)

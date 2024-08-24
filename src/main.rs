@@ -17,6 +17,8 @@ use serde::Deserialize;
 use serde_json::json;
 use tower_cookies::CookieManagerLayer;
 use tower_http::services::ServeDir;
+use tracing::{debug, info};
+use tracing_subscriber::EnvFilter;
 use uuid::Uuid;
 
 mod ctx;
@@ -27,6 +29,12 @@ mod web;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    tracing_subscriber::fmt()
+    .without_time() // For early local development.
+    .with_target(false)
+    .with_env_filter(EnvFilter::from_default_env())
+    .init();
+
     // Initialize ModelController
     let mc = ModelController::new().await?;
 
@@ -47,7 +55,7 @@ async fn main() -> Result<()> {
 
     // region:     --- Server ---
     let addr = SocketAddr::from(([127, 0, 0, 1], 3001));
-    println!("->> LISTENING on {addr}\n");
+    info!("LISTENING on {addr}\n");
 
     axum::Server::bind(&addr)
         .serve(routes_all.into_make_service())
@@ -63,7 +71,7 @@ async fn main_response_mapper(
     req_method: Method,
     res: Response,
 ) -> Response {
-    println!("->> {:<12} - main_response_mapper", "RES_MAPPER");
+    debug!("{:<12} - main_response_mapper", "RES_MAPPER");
 
     let uuid = Uuid::new_v4();
 
@@ -88,7 +96,7 @@ async fn main_response_mapper(
         });
 
     // -- TODO: Build an log the server log line.
-    // println!("->> server log line - {uuid:?} - Error: {service_error:?}");
+    // debug!("server log line - {uuid:?} - Error: {service_error:?}");
     let client_error = client_status_error.unzip().1;
     _ = log_request(uuid, req_method, uri, ctx, service_error, client_error).await;
 
@@ -112,14 +120,14 @@ struct HelloParams {
 }
 
 async fn handler_hello(Query(params): Query<HelloParams>) -> impl IntoResponse {
-    println!("->> {:<12} - handler_hello - {params:?}", "HANDLER");
+    debug!("{:<12} - handler_hello - {params:?}", "HANDLER");
 
     let name = params.name.as_deref().unwrap_or("World!");
     Html(format!("Hello, <strong>{name}</strong>"))
 }
 
 async fn handler_hello2(Path(name): Path<String>) -> impl IntoResponse {
-    println!("->> {:<12} - handler_hello2 - {name:?}", "HANDLER");
+    debug!("{:<12} - handler_hello2 - {name:?}", "HANDLER");
 
     Html(format!("Hello2, <strong>{name}</strong>"))
 }

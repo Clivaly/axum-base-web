@@ -10,6 +10,7 @@ use axum::routing::get;
 use axum::{async_trait, RequestPartsExt};
 use lazy_regex::regex_captures;
 use tower_cookies::{Cookie, Cookies};
+use tracing::debug;
 
 use crate::ctx::Ctx;
 use crate::model::ModelController;
@@ -22,7 +23,7 @@ pub async fn mw_require_auth<B>(
     req: Request<B>,
     next: Next<B>,
 ) -> Result<Response> {
-    println!("->> {:<12} - mw_require_auth - {ctx:?}", "MIDDLEWARE");
+    debug!("{:<12} - mw_require_auth - {ctx:?}", "MIDDLEWARE");
 
     // let auth_token = cookies.get(AUTH_TOKEN).map(|c| c.value().to_string());
     ctx?;
@@ -43,7 +44,7 @@ pub async fn my_ctx_resolver<B>(
     mut req: Request<B>,
     next: Next<B>,
 ) -> Result<Response> {
-    println!("->> {:<12} - my_ctx_resolver", "MIDDLEWARE");
+    debug!("{:<12} - my_ctx_resolver", "MIDDLEWARE");
 
     let auth_token = cookies.get(AUTH_TOKEN).map(|c| c.value().to_string());
 
@@ -76,7 +77,7 @@ impl<S: Send + Sync> FromRequestParts<S> for Ctx {
     type Rejection = CustomError;
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self> {
-        println!("->> {:<12} - Ctx", "EXTRACTOR");
+        debug!("{:<12} - Ctx", "EXTRACTOR");
 
         parts
             .extensions

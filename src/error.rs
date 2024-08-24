@@ -5,6 +5,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use serde::Serialize;
+use tracing::debug;
 
 pub type Result<T> = core::result::Result<T, CustomError>;
 
@@ -24,7 +25,7 @@ pub enum CustomError {
 
 impl IntoResponse for CustomError {
     fn into_response(self) -> Response {
-        println!("->> {:<12} - {self:?}", "INTO_RES");
+        debug!("{:<12} - {self:?}", "INTO_RES");
 
         // Create a placeholder axum response.
         let mut response = StatusCode::INTERNAL_SERVER_ERROR.into_response();

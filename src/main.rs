@@ -1,7 +1,4 @@
 use std::net::SocketAddr;
-
-pub use self::error::{CustomError, Result};
-
 use axum::{
     extract::{Path, Query},
     http::{Method, Uri},
@@ -21,11 +18,17 @@ use tracing::{debug, info};
 use tracing_subscriber::EnvFilter;
 use uuid::Uuid;
 
+// region:     --- Modules ---
+
+mod config;
 mod ctx;
 mod error;
 mod log;
 mod model;
 mod web;
+
+pub use self::error::{CustomError, Result};
+pub use config::config; // use crate::config;
 
 #[tokio::main]
 async fn main() -> Result<()> {

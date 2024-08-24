@@ -14,6 +14,9 @@ pub type Result<T> = core::result::Result<T, CustomError>;
 pub enum CustomError {
     LoginFail,
 
+    // -- Config
+    ConfigMissingEnv(&'static str),
+
     // -- Auth Errors.
     AuthFailNoAuthTokenCookie,
     AuthFailTokenWrongFormat,
